@@ -5,7 +5,7 @@
 
 void LCD_I2C_Init(void)
 {
-    // Kh?i t?o màn hình LCD
+    // Khoi tao mÃ n hÃ¬nh LCD
     uint8_t init_seq[] = {
         0x00, 0x38, 0x00, 0x39, 0x00, 0x14, 0x00, 0x73, 0x00, 0x56,
         0x00, 0x6C, 0x00, 0x38, 0x00, 0x0C, 0x00, 0x01};
@@ -14,7 +14,7 @@ void LCD_I2C_Init(void)
 
 void LCD_I2C_DisplayNumber(uint16_t number)
 {
-    // Hi?n th? s? lên màn hình LCD
+    // Hien thi so lÃªn mÃ n hÃ¬nh LCD
     char buffer[16];
     sprintf(buffer, "Step Count: %d", number);
 
