@@ -2,20 +2,23 @@
 #include "mpu6050.h"
 #include "lcd_i2c.h"
 
-void Delay_ms(uint32_t ms)
+void SysTick_Handler(void)
 {
-   volatile uint32_t i, j;
-   for(i = 0 ; i < ms ; i++)
-   {
-      for(j = 0 ; j < 2000 ; j++)
-      {
-         __NOP(); 
-      }
-   }
-}
+    static uint16_t step_count = 0;
+    float acceleration[3];
+    MPU6050_GetAcceleration(acceleration);
 
+    // Tính toán gia t?c t?ng và ki?m tra xem có th? có m?t bu?c chân không
+    float total_acceleration = acceleration[0] + acceleration[1] + acceleration[2];
+    if (total_acceleration > 1.5) {
+        step_count++;
+        LCD_I2C_DisplayNumber(step_count);
+    }
+}
 int main(void)
 {
+	  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+	  SysTick_Config(SystemCoreClock/1000);
     uint16_t step_count = 0;
     float acceleration[3];
 
@@ -24,15 +27,6 @@ int main(void)
 
     while (1)
     {
-        MPU6050_GetAcceleration(acceleration);
-
-        // Tính toán gia toc tang và kiem tra xem có the có mot buoc chân không
-        float total_acceleration = acceleration[0] + acceleration[1] + acceleration[2];
-        if (total_acceleration > 1.5) {
-            step_count++;
-            LCD_I2C_DisplayNumber(step_count);
-        }
-
-        Delay_ms(10); // Ðoi trong mot thoi gian ngan truoc khi doc du lieu moi tu MPU6050
+        SysTick_Handler();
     }
 }
