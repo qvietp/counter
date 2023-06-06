@@ -7,7 +7,7 @@ void I2C_Init1(void)
     GPIO_InitTypeDef GPIO_InitStruct;
     I2C_InitTypeDef I2C_InitStruct;
 
-    // Kh?i t?o GPIO và I2C
+    // Khoi tao GPIO và I2C
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
