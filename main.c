@@ -9,10 +9,11 @@ void Delay_ms(uint32_t ms)
    {
       for(j = 0 ; j < 2000 ; j++)
       {
-         __NOP(); //H‡m assembler d?ng vi?c x? lÌ c?a CPU trong m?t chu k? clock
+         __NOP(); 
       }
    }
 }
+
 int main(void)
 {
     uint16_t step_count = 0;
@@ -25,13 +26,13 @@ int main(void)
     {
         MPU6050_GetAcceleration(acceleration);
 
-        // TÌnh to·n gia t?c t?ng v‡ ki?m tra xem cÛ th? cÛ m?t bu?c ch‚n khÙng
+        // T√≠nh to√°n gia toc tang v√† kiem tra xem c√≥ the c√≥ mot buoc ch√¢n kh√¥ng
         float total_acceleration = acceleration[0] + acceleration[1] + acceleration[2];
         if (total_acceleration > 1.5) {
             step_count++;
             LCD_I2C_DisplayNumber(step_count);
         }
 
-        Delay_ms(10); // –?i trong m?t th?i gian ng?n tru?c khi d?c d? li?u m?i t? MPU6050
+        Delay_ms(10); // √êoi trong mot thoi gian ngan truoc khi doc du lieu moi tu MPU6050
     }
 }
