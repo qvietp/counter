@@ -7,7 +7,7 @@ void I2C_Init1(void)
     GPIO_InitTypeDef GPIO_InitStruct;
     I2C_InitTypeDef I2C_InitStruct;
 
-    // Kh?i t?o GPIO v‡ I2C
+    // Kh?i t?o GPIO v√† I2C
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
@@ -30,7 +30,7 @@ void I2C_Init1(void)
 
 void I2C_Write(uint8_t addr, uint8_t* data, uint16_t size)
 {
-    // G?i l?nh START
+    // Gui lenh START
     I2C_GenerateSTART(I2C1, ENABLE);
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))
     {
@@ -38,7 +38,7 @@ void I2C_Write(uint8_t addr, uint8_t* data, uint16_t size)
     }
     I2C_TIMEOUT = 100000;
 
-    // G?i d?a ch? thi?t b? v‡ ghi d? li?u
+    // Gui dia chi thiet bi v√† ghi du lieu
     I2C_Send7bitAddress(I2C1, addr, I2C_Direction_Transmitter);
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
     {
@@ -55,13 +55,13 @@ void I2C_Write(uint8_t addr, uint8_t* data, uint16_t size)
         I2C_TIMEOUT = 100000;
     }
 
-    // G?i l?nh STOP
+    // Gui lenh STOP
     I2C_GenerateSTOP(I2C1, ENABLE);
 }
 
 void I2C_Read(uint8_t addr, uint8_t* read_addr, uint8_t read_addr_size, uint8_t* buffer, uint16_t size)
 {
-    // G?i l?nh START
+    // Gui lenh START
     I2C_GenerateSTART(I2C1, ENABLE);
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))
     {
@@ -69,7 +69,7 @@ void I2C_Read(uint8_t addr, uint8_t* read_addr, uint8_t read_addr_size, uint8_t*
     }
     I2C_TIMEOUT = 100000;
 
-    // G?i d?a ch? thi?t b? v‡ ghi d?a ch? b?t d?u d?c
+    // Gui dia chi thiet bi v√† ghi dia chi bat dau doc
     I2C_Send7bitAddress(I2C1, addr, I2C_Direction_Transmitter);
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
     {
@@ -86,7 +86,7 @@ void I2C_Read(uint8_t addr, uint8_t* read_addr, uint8_t read_addr_size, uint8_t*
         I2C_TIMEOUT = 100000;
     }
 
-    // G?i l?nh RESTART
+    // Gui lenh RESTART
     I2C_GenerateSTART(I2C1, ENABLE);
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))
     {
@@ -94,7 +94,7 @@ void I2C_Read(uint8_t addr, uint8_t* read_addr, uint8_t read_addr_size, uint8_t*
     }
     I2C_TIMEOUT = 100000;
 
-    // G?i d?a ch? thi?t b? v‡ d?c d? li?u
+    // Gui dia chi thiet bi v√† doc du lieu
     I2C_Send7bitAddress(I2C1, addr, I2C_Direction_Receiver);
     while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED))
     {
@@ -106,7 +106,7 @@ void I2C_Read(uint8_t addr, uint8_t* read_addr, uint8_t read_addr_size, uint8_t*
     {
         if (i == size - 1)
         {
-            // G?i l?nh STOP tru?c khi d?c d?n byte cu?i c˘ng
+            // Gui lenh STOP truoc khi doc den byte cuoi c√πng
             I2C_AcknowledgeConfig(I2C1, DISABLE);
             I2C_GenerateSTOP(I2C1, ENABLE);
         }
