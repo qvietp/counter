@@ -16,8 +16,8 @@ void SysTick_Handler(void)
 }
 int main(void)
 {
-	  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
-	  SysTick_Config(SystemCoreClock/1000);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+    SysTick_Config(SystemCoreClock/1000);
     uint16_t step_count = 0;
     float acceleration[3];
 
