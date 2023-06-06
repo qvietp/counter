@@ -8,7 +8,6 @@ void SysTick_Handler(void)
     float acceleration[3];
     MPU6050_GetAcceleration(acceleration);
 
-    // Tính toán gia t?c t?ng và ki?m tra xem có th? có m?t bu?c chân không
     float total_acceleration = acceleration[0] + acceleration[1] + acceleration[2];
     if (total_acceleration > 1.5) {
         step_count++;
