@@ -1,4 +1,4 @@
-#include "i2c_mpu6050.h"
+#include "mpu6050.h"
 #include "delay.h"
 
 static uint8_t CTR_MPU6050_BUF[8];
