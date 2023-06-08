@@ -1,7 +1,7 @@
 #include "main.h"
-#include "i2c_lcd.h"
+#include "lcd_i2c.h"
 #include "delay.h"
-#include "i2c_mpu6050.h"
+#include "mpu6050.h"
 
 
 float* CTR_MPU6050_getvalue;
@@ -63,14 +63,10 @@ int main(void)
 		
 		if (sw1 == 1)
 		{
+			calibrate();
 			GPIO_ResetBits(GPIOA, GPIO_Pin_8);
 			I2C_MPU6050_Setup();
 			CTR_MPU6050_getvalue = CTR_READ_ACCEL_MPU6050();
-			
-			NextAx = *(CTR_MPU6050_getvalue);
-			NextAy = *(CTR_MPU6050_getvalue + 1);
-			NextAz = *(CTR_MPU6050_getvalue + 2);
-	//		int acc = 0;
 	 float totvect[100] = {0};
 	 float totave[100] = {0};
 	 float xaccl[100] = {0};
@@ -109,16 +105,6 @@ int main(void)
 		}
 	}
 			
-		/*	if (time >= 70) {
-				count ++;
-				I2C_LCD_Setup();
-				I2C_LCD_Clear();
-				sprintf(CTR_datasend,"So buoc chan: %d", count);
-				I2C_LCD_Puts(CTR_datasend);
-				
-				time = 0;
-			}
-			*/
 			if ( i == 200)
 			GPIO_SetBits(GPIOA, GPIO_Pin_9);
 			if (i == 400){
