@@ -1,5 +1,5 @@
 #include <stm32f10x.h>
-#include "I2C.h"
+#include "i2c.h"
 #include "delay.h"
 
 GPIO_TypeDef* GPIOx;
