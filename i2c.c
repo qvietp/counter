@@ -1,121 +1,252 @@
-#include "i2c.h"
+#include <stm32f10x.h>
+#include "I2C.h"
+#include "delay.h"
 
-int I2C_TIMEOUT = 100000;
+GPIO_TypeDef* GPIOx;
+uint32_t RCC_APB2Periph_GPIO_x;
+uint16_t GPIO_PIN_x, GPIO_PIN_y;
 
-void I2C_Init1(void)
+#define SDA_0() GPIO_ResetBits(GPIOx, GPIO_PIN_x)
+#define SDA_1() GPIO_SetBits(GPIOx, GPIO_PIN_x)
+#define SCL_0() GPIO_ResetBits(GPIOx, GPIO_PIN_y)
+#define SCL_1() GPIO_SetBits(GPIOx, GPIO_PIN_y)
+
+void i2c_setup (GPIO_TypeDef* GPIOX, uint16_t GPIO_PIN_X, uint16_t GPIO_PIN_Y , uint32_t RCC_APB2Periph_GPIO_X)
 {
-    GPIO_InitTypeDef GPIO_InitStruct;
-    I2C_InitTypeDef I2C_InitStruct;
-
-    // Khoi tao GPIO và I2C
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
-    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF_OD;
-    GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
-
-    I2C_InitStruct.I2C_Mode = I2C_Mode_I2C;
-    I2C_InitStruct.I2C_DutyCycle = I2C_DutyCycle_2;
-    I2C_InitStruct.I2C_OwnAddress1 = 0x00;
-    I2C_InitStruct.I2C_Ack = I2C_Ack_Enable;
-    I2C_InitStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-    I2C_InitStruct.I2C_ClockSpeed = 100000;
-    I2C_Init(I2C1, &I2C_InitStruct);
-
-    I2C_Cmd(I2C1, ENABLE);
+	GPIOx = GPIOX;
+	GPIO_PIN_x = GPIO_PIN_X;
+	GPIO_PIN_y = GPIO_PIN_Y;
+	RCC_APB2Periph_GPIO_x = RCC_APB2Periph_GPIO_X;
 }
 
-void I2C_Write(uint8_t addr, uint8_t* data, uint16_t size)
+uint8_t SDA_VAL(void)
 {
-    // Gui lenh START
-    I2C_GenerateSTART(I2C1, ENABLE);
-    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))
-    {
-        if ((I2C_TIMEOUT--) == 0) return;
-    }
-    I2C_TIMEOUT = 100000;
-
-    // Gui dia chi thiet bi và ghi du lieu
-    I2C_Send7bitAddress(I2C1, addr, I2C_Direction_Transmitter);
-    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-    {
-        if ((I2C_TIMEOUT--) == 0) return;
-    }
-    I2C_TIMEOUT = 100000;
-
-    for (int i = 0; i < size; i++) {
-        I2C_SendData(I2C1, data[i]);
-        while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-        {
-            if ((I2C_TIMEOUT--) == 0) return;
-        }
-        I2C_TIMEOUT = 100000;
-    }
-
-    // Gui lenh STOP
-    I2C_GenerateSTOP(I2C1, ENABLE);
+	if (GPIO_ReadInputDataBit(GPIOx, GPIO_PIN_x)){
+		return 1;
+	}
+	return 0;
 }
 
-void I2C_Read(uint8_t addr, uint8_t* read_addr, uint8_t read_addr_size, uint8_t* buffer, uint16_t size)
+void i2c_init()
 {
-    // Gui lenh START
-    I2C_GenerateSTART(I2C1, ENABLE);
-    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))
-    {
-        if ((I2C_TIMEOUT--) == 0) return;
-    }
-    I2C_TIMEOUT = 100000;
-
-    // Gui dia chi thiet bi và ghi dia chi bat dau doc
-    I2C_Send7bitAddress(I2C1, addr, I2C_Direction_Transmitter);
-    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED))
-    {
-        if ((I2C_TIMEOUT--) == 0) return;
-    }
-    I2C_TIMEOUT = 100000;
-
-    for (int i = 0; i < read_addr_size; i++) {
-        I2C_SendData(I2C1, read_addr[i]);
-        while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_TRANSMITTED))
-        {
-            if ((I2C_TIMEOUT--) == 0) return;
-        }
-        I2C_TIMEOUT = 100000;
-    }
-
-    // Gui lenh RESTART
-    I2C_GenerateSTART(I2C1, ENABLE);
-    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT))
-    {
-        if ((I2C_TIMEOUT--) == 0) return;
-    }
-    I2C_TIMEOUT = 100000;
-
-    // Gui dia chi thiet bi và doc du lieu
-    I2C_Send7bitAddress(I2C1, addr, I2C_Direction_Receiver);
-    while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED))
-    {
-        if ((I2C_TIMEOUT--) == 0) return;
-    }
-    I2C_TIMEOUT = 100000;
-
-    for (int i = 0; i < size; i++)
-    {
-        if (i == size - 1)
-        {
-            // Gui lenh STOP truoc khi doc den byte cuoi cùng
-            I2C_AcknowledgeConfig(I2C1, DISABLE);
-            I2C_GenerateSTOP(I2C1, ENABLE);
-        }
-        while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_RECEIVED))
-        {
-            if ((I2C_TIMEOUT--) == 0) return;
-        }
-        I2C_TIMEOUT = 100000;
-        buffer[i] = I2C_ReceiveData(I2C1);
-    }
-    I2C_AcknowledgeConfig(I2C1, ENABLE);
+		
+	GPIO_InitTypeDef gpioInit;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIO_x, ENABLE);
+	gpioInit.GPIO_Mode = GPIO_Mode_Out_OD;
+	gpioInit.GPIO_Pin = GPIO_PIN_x | GPIO_PIN_y;
+	gpioInit.GPIO_Speed = GPIO_Speed_50MHz;
+	
+	GPIO_Init(GPIOx, &gpioInit);
+	
+	SDA_1();
+	SCL_1();
 }
+
+void i2c_init_read()
+{
+		
+	GPIO_InitTypeDef gpioInit;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIO_x, ENABLE);
+	gpioInit.GPIO_Mode = GPIO_Mode_IPD;
+	gpioInit.GPIO_Pin = GPIO_PIN_x | GPIO_PIN_y;
+	gpioInit.GPIO_Speed = GPIO_Speed_50MHz;
+	
+	GPIO_Init(GPIOx, &gpioInit);
+	
+	SDA_1();
+	SCL_1();
+}
+
+void i2c_start(void)
+{
+	
+	SCL_1();
+	delay_us(3);
+	SDA_1();
+	delay_us(3);
+	SDA_0();
+	delay_us(3);
+	SCL_0();
+	delay_us(3);
+}
+
+void i2c_stop(void)
+{
+	
+	SDA_0();
+	delay_us(3);
+	SCL_1();
+	delay_us(3);
+	SDA_1();
+	delay_us(3);
+}
+
+uint8_t i2c_write(uint8_t u8Data)
+{
+	uint8_t i;
+	uint8_t u8Ret;
+	
+	for (i = 0; i < 8; ++i) {
+		if (u8Data & 0x80) {
+			SDA_1();
+		} else {
+			SDA_0();
+		}
+		delay_us(3);
+		SCL_1();
+		delay_us(5);
+		SCL_0();
+		delay_us(2);
+		u8Data <<= 1;
+	}
+	
+	SDA_1();
+	delay_us(3);
+	SCL_1();
+	delay_us(3);
+	if (SDA_VAL()) {
+		u8Ret = 0;
+	} else {
+		u8Ret = 1;
+	}
+	delay_us(2);
+	SCL_0();
+	delay_us(5);
+	
+	return u8Ret;
+}
+
+uint8_t i2c_read(uint8_t u8Ack)
+{
+	uint8_t i;
+	uint8_t u8Ret;
+	
+	SDA_1();
+	delay_us(3);
+	
+	for (i = 0; i < 8; ++i) {
+		u8Ret <<= 1;
+		SCL_1();
+		delay_us(3);
+		if (SDA_VAL()) {
+			u8Ret |= 0x01;
+		}
+		delay_us(2);
+		SCL_0();
+		delay_us(5);
+	}
+	
+	if (u8Ack) {
+		SDA_0();
+	} else {
+		SDA_1();
+	}
+	delay_us(3);
+	
+	SCL_1();
+	delay_us(5);
+	SCL_0();
+	delay_us(5);
+	return u8Ret;
+}
+
+
+void My_I2C_Init()
+{
+	i2c_init();
+}
+
+uint8_t I2C_Write(uint8_t Address, uint8_t *pData, uint8_t length)
+{
+	uint8_t i;
+	
+	i2c_start();
+	if (i2c_write(Address) == 0) {
+		i2c_stop();
+		return 0;
+	}
+	for (i = 0; i < length; ++i) {
+		if (i2c_write(pData[i]) == 0) {
+			i2c_stop();
+			return 0;
+		}
+	}
+	i2c_stop();
+	
+	return 1;
+}
+
+uint8_t I2C_Read(uint8_t Address, uint8_t *pData, uint8_t length)
+{
+	uint8_t i;
+	
+	i2c_start();
+	
+	if (i2c_write(Address) == 0) {
+		i2c_stop();
+		return 0;
+	}
+	
+	for (i = 0; i < length - 1; ++i) {
+		pData[i] = i2c_read(1);
+	}
+	pData[i] = i2c_read(0);
+	
+	i2c_stop();
+	
+	return 1;
+}
+
+//------------------------------
+
+uint8_t CTR_Single_Write(uint8_t SlaveAddress,uint8_t REG_Address,uint8_t REG_data)		     
+{
+  i2c_start();
+	if (i2c_write(SlaveAddress) == 0){
+		i2c_stop();
+		return 0;
+	}
+	
+	if (i2c_write(REG_Address) == 0){
+		i2c_stop();
+		return 0;
+	}
+	
+	if (i2c_write(REG_data) == 0){
+		i2c_stop();
+		return 0;
+	}
+	
+	i2c_stop();
+	Delay_Ms(5);
+	return 1;
+}
+
+uint8_t CTR_Single_Read(uint8_t SlaveAddress,uint8_t REG_Address)
+{   
+	uint8_t putData;
+	
+	i2c_start();
+	if (i2c_write(SlaveAddress) == 0){
+		i2c_stop();
+		return 0;
+	}
+	
+	if (i2c_write(REG_Address) == 0){
+		i2c_stop();
+		return 0;
+	}
+	
+	i2c_start();
+	
+	if (i2c_write(SlaveAddress + 1 ) == 0){
+		i2c_stop();
+		return 0;
+	}
+	
+	putData = i2c_read(0);
+	
+	i2c_stop();
+	
+	return putData;
+}			
