@@ -1,27 +1,43 @@
-#include "mpu6050.h"
-#include "i2c.h"
+#include "i2c_mpu6050.h"
+#include "delay.h"
 
-void MPU6050_Init(void)
+static uint8_t CTR_MPU6050_BUF[8];
+static float AccData[3];
+static uint16_t a;
+
+float* CTR_READ_ACCEL_MPU6050(void)
 {
-    // Kích hoat nguon MPU6050
-    uint8_t turn_on[] = {0x6B, 0x00};
-    I2C_Write(MPU6050_ADDR, turn_on, sizeof(turn_on));
-
-    // Cau hình giá tri scale cho gia toc
-    uint8_t set_scale[] = {0x1C, 0x00};
-    I2C_Write(MPU6050_ADDR, set_scale, sizeof(set_scale));
+	
+	CTR_MPU6050_BUF[0] = CTR_Single_Read(MPU6050_ADDR,ACCEL_XOUT_H);
+	CTR_MPU6050_BUF[1] = CTR_Single_Read(MPU6050_ADDR,ACCEL_XOUT_L);
+	a =(uint16_t)(CTR_MPU6050_BUF[0] <<8)|CTR_MPU6050_BUF[1];
+	AccData[0] = a / 16384.0;
+	
+	CTR_MPU6050_BUF[2] = CTR_Single_Read(MPU6050_ADDR,ACCEL_YOUT_H);
+	CTR_MPU6050_BUF[3] = CTR_Single_Read(MPU6050_ADDR,ACCEL_YOUT_L);
+	a =	(uint16_t)(CTR_MPU6050_BUF[2] <<8)|CTR_MPU6050_BUF[3];
+	AccData[1] = a /16384.0;
+	
+	CTR_MPU6050_BUF[4] = CTR_Single_Read(MPU6050_ADDR,ACCEL_ZOUT_H);
+	CTR_MPU6050_BUF[5] = CTR_Single_Read(MPU6050_ADDR,ACCEL_ZOUT_L);
+	a =	(uint16_t)(CTR_MPU6050_BUF[4] <<8)|CTR_MPU6050_BUF[5];
+	AccData[2] =  a/16384.0;
+	
+	return AccData;
 }
 
-void MPU6050_GetAcceleration(float* acceleration)
+void I2C_MPU6050_Setup (void)
 {
-    uint8_t buffer[6];
-
-    // Ðoc giá tri do duoc tu MPU6050
-    uint8_t read_addr = 0x3B;
-    I2C_Read(MPU6050_ADDR, &read_addr, 1, buffer, 6);
-
-    // Chuyen doi giá tri do duoc thành don vi m/s^2
-    acceleration[0] = (float)((int16_t)((buffer[0] << 8) | buffer[1])) / MPU6050_ACCEL_SCALE_2G * 9.81;
-    acceleration[1] = (float)((int16_t)((buffer[2] << 8) | buffer[3])) / MPU6050_ACCEL_SCALE_2G * 9.81;
-    acceleration[2] = (float)((int16_t)((buffer[4] << 8) | buffer[5])) / MPU6050_ACCEL_SCALE_2G * 9.81;
+	i2c_setup(GPIOB, GPIO_Pin_7, GPIO_Pin_6, RCC_APB2Periph_GPIOB);//SDA,SCL
 }
+
+void I2C_MPU6050_Init (void)
+{
+	i2c_init();
+	CTR_Single_Write(MPU6050_ADDR, MPU6050_SMPLRT_DIV, 0x00);
+  CTR_Single_Write(MPU6050_ADDR, MPU6050_CONFIG, 0x00);
+  CTR_Single_Write(MPU6050_ADDR, MPU6050_GYRO_CONFIG, 0x08);
+  CTR_Single_Write(MPU6050_ADDR, MPU6050_ACCEL_CONFIG, 0x02);
+  CTR_Single_Write(MPU6050_ADDR, MPU6050_PWR_MGMT_1, 0x01);
+}
+
