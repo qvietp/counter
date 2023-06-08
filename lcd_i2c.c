@@ -1,5 +1,5 @@
 #include "i2c.h"
-#include "i2c_lcd.h"
+#include "lcd_i2c.h"
 #include "delay.h"
 static uint8_t u8LCD_Buff[8];
 static uint8_t u8LcdTmp;
