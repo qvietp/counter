@@ -1,15 +1,28 @@
-#ifndef MPU6050_H_
-#define MPU6050_H_
-
-#include "stm32f10x.h"
+#ifndef _CTR_MPU6050_
+#define _CTR_MPU6050_
+#include "i2c.h"
 
 #define MPU6050_ADDR 0xD0
-#define MPU6050_ACCEL_SCALE_2G 16384.0
-#define MPU6050_ACCEL_SCALE_4G 8192.0
-#define MPU6050_ACCEL_SCALE_8G 4096.0
-#define MPU6050_ACCEL_SCALE_16G 2048.0
 
-void MPU6050_Init(void);
-void MPU6050_GetAcceleration(float* acceleration);
+#define ACCEL_XOUT_H 0x3B
+#define ACCEL_XOUT_L 0x3C
+#define ACCEL_YOUT_H 0x3D
+#define ACCEL_YOUT_L 0x3E
+#define ACCEL_ZOUT_H 0x3F
+#define ACCEL_ZOUT_L 0x40
 
-#endif /* MPU6050_H_ */
+#define MPU6050_SMPLRT_DIV   0x19
+#define MPU6050_CONFIG       0x1a
+#define MPU6050_GYRO_CONFIG  0x1b
+#define MPU6050_ACCEL_CONFIG 0x1c
+#define MPU6050_WHO_AM_I     0x75
+#define MPU6050_PWR_MGMT_1   0x6b
+#define MPU6050_TEMP_H       0x41
+#define MPU6050_TEMP_L       0x42
+
+void I2C_MPU6050_Setup (void);
+void I2C_MPU6050_Init (void);
+float *CTR_READ_ACCEL_MPU6050(void);
+
+#endif
+
